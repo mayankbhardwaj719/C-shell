@@ -73,23 +73,23 @@ int main()
             {
                 pwd();
             }
-            if (strcmp(Individual_Command[0], "echo") == 0)
+            else if (strcmp(Individual_Command[0], "echo") == 0)
             {
                 echo(Individual_Command, k); // k is the number of tokens
             }
-            if (strcmp(Individual_Command[0], "cd") == 0)
+            else if (strcmp(Individual_Command[0], "cd") == 0)
             {
                 cd(Individual_Command); 
             }
-            if (strcmp(Individual_Command[0], "ls") == 0)
+            else if (strcmp(Individual_Command[0], "ls") == 0)
             {
                 ls(Individual_Command); // k is the number of tokens
             }
-            if (strcmp(Individual_Command[0], "repeat") == 0)
+            else if (strcmp(Individual_Command[0], "repeat") == 0)
             {
                 repeat(Individual_Command,k); // k is the number of tokens
             }
-            if (strcmp(Individual_Command[0], "history") == 0)
+            else if (strcmp(Individual_Command[0], "history") == 0)
             {
                 history(Individual_Command); // k is the number of tokens
             }
