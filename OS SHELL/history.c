@@ -1,7 +1,5 @@
 #include "headers.h"
 
-
-
 void addhis (char * cmd)
 {
     strcpy(his.history[his.histins%20],cmd);

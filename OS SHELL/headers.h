@@ -23,6 +23,7 @@
 #include "repeat.h"
 #include "history.h"
 #include "bg_fg.h"
+#include "pinfo.h"
 
 char hostname[1024];
 char username[1024];

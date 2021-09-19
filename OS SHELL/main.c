@@ -93,9 +93,14 @@ int main()
             {
                 history(Individual_Command); // k is the number of tokens
             }
+            else if (strcmp(Individual_Command[0], "pinfo") == 0) //COMMAND :PINFO
+            {
+                pinfo(k,Individual_Command);
+            }
             else
             {
                 bg_fg(Individual_Command,0,k);
+
             }
 
         }

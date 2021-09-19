@@ -4,55 +4,55 @@
 int error;
 
 
-struct Node *insertNode(struct Node *head, pid_t pid, char name[], int jnum)
+struct Node *ADDNode(struct Node *head, pid_t pid, char name[], int job_NUM)
 {
     struct Node *new_node = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *last = head;
+    struct Node *start = head;
 
     new_node->pid = pid;
     strcpy(new_node->name, name);
-    new_node->job = jnum;
+    new_node->job = job_NUM;
     new_node->next = NULL;
 
-    if (!head)
+    if (head==0)
     {
         head = new_node;
         return head;
     }
 
-    while (last->next != NULL)
-        last = last->next;
+    while (start->next != NULL)
+        start = start->next;
 
-    last->next = new_node;
+    start->next = new_node;
     return head;
 }
 
 struct Node *deleteNode(struct Node *head, pid_t pid)
 {
     struct Node *temp = head;
-    struct Node *last = head;
+    struct Node *start = head;
 
     if (temp && temp->pid == pid)
     {
-        last = temp->next;
+        start = temp->next;
         free(temp);
-        return last;
+        return start;
     }
 
     while (temp && temp->pid != pid)
     {
-        last = temp;
+        start = temp;
         temp = temp->next;
     }
 
-    last->next = temp->next;
+    start->next = temp->next;
     free(temp);
     return head;
 }
 
 char *findNode(struct Node *head, pid_t pid)
 {
-    if (!head)
+    if (head==0)
         return NULL;
 
     struct Node *temp = head;
@@ -66,17 +66,17 @@ char *findNode(struct Node *head, pid_t pid)
     return temp->name;
 }
 
-pid_t findNodebyJobNumber(struct Node *head, int job)
+pid_t findNodebyJobNumber(struct Node *head, int job_NUM)
 {
-    if (!head)
+    if (head==0)
         return 0;
 
     struct Node *temp = head;
 
-    while (temp && temp->job != job)
+    while (temp && temp->job != job_NUM)
         temp = temp->next;
 
-    if (!temp)
+    if (temp==0)
         return 0;
 
     return temp->pid;
@@ -84,18 +84,18 @@ pid_t findNodebyJobNumber(struct Node *head, int job)
 
 
 
-void bg_fg(char **args,int last,int k)
+void bg_fg(char **token,int start,int k)
 {
 
     int j = 0;
     for (int i = 0; i < k; i++)
     {
-        if (strcmp(args[i], ""))
+        if (strcmp(token[i], ""))
         {
-            args[j++] = args[i];
+            token[j++] = token[i];
         }
     }
-    args[j] = 0;
+    token[j] = 0;
 
     
     pid_t pid;
@@ -109,9 +109,9 @@ void bg_fg(char **args,int last,int k)
     else if (!pid)
     {
         setpgid(0, 0);
-        if (execvp(args[0], args) < 0)
+        if (execvp(token[0], token) < 0)
         {
-            fprintf(stderr, "Error executing %s command\n", args[0]);
+            fprintf(stderr, "Error executing %s command\n", token[0]);
             perror("");
             exit(1);
         }
@@ -120,54 +120,55 @@ void bg_fg(char **args,int last,int k)
     {
         dup2(shellOutFile, STDOUT_FILENO);
         dup2(shellInFile, STDIN_FILENO);
-        if (last)
+        if (start)
         {
             char name[1024];
-            strcpy(name, args[0]);
+            strcpy(name, token[0]);
             for (int i = 1; i < j; i++)
             {
                 strcat(name, " ");
-                strcat(name, args[i]);
+                strcat(name, token[i]);
             }
 
             struct Node *temp = head;
-            int jnum = 1;
+            int job_NUM = 1;
             while (temp != NULL)
             {
-                jnum = temp->job + 1;
+                job_NUM = temp->job + 1;
                 temp = temp->next;
             }
-            head = insertNode(head, pid, name, jnum);
+            head = ADDNode(head, pid, name, job_NUM);
             printf("%d\n", pid);
         }
         else
         {
-            signal(SIGTTOU, SIG_IGN);
-            signal(SIGTTIN, SIG_IGN);
+           
             tcsetpgrp(0, pid);
             waitpid(pid, &status, WUNTRACED);
             tcsetpgrp(0, shellpid);
+            signal(SIGTTOU, SIG_IGN);
+            signal(SIGTTIN, SIG_IGN);
             signal(SIGTTOU, SIG_DFL);
             signal(SIGTTIN, SIG_DFL);
             if (WIFSTOPPED(status))
             {
                 error = 1;
-                char name[1024];
-                strcpy(name, args[0]);
+                char name[2048];
+                strcpy(name, token[0]);
                 for (int i = 1; i < j; i++)
                 {
                     strcat(name, " ");
-                    strcat(name, args[i]);
+                    strcat(name, token[i]);
                 }
 
                 struct Node *temp = head;
-                int jnum = 1;
+                int job_NUM = 1;
                 while (temp != NULL)
                 {
-                    jnum = temp->job + 1;
+                    job_NUM = temp->job + 1;
                     temp = temp->next;
                 }
-                head = insertNode(head, pid, name, jnum);
+                head = ADDNode(head, pid, name, job_NUM);
                 printf("%s with PID %d suspended\n", name, pid);
             }
 

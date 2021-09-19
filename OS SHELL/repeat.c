@@ -28,6 +28,10 @@ void repeat(char **token,int k)
         {
             ls(token); 
         }
+        else
+        {
+            bg_fg(token,0,k-2);
+        }
         
     }
 
