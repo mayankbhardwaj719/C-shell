@@ -1,61 +1,70 @@
 #include "headers.h"
 
-void execPinfo(int number_of_char, char *token[], char *home_directory)
+void pinfo(int number_of_char, char *token[], char *home_directory)
 {
-	char *pids = malloc(20);
-	if(number_of_char == 1) {
+	char *P_ID_S = malloc(20);
+	if (number_of_char == 1)
+	{
 		pid_t pid = getpid();
-		sprintf(pids, "%d", pid);
+		sprintf(P_ID_S, "%d", pid);
 	}
-	else if(number_of_char == 2){
-		strcpy(pids, token[1]);
+	else if (number_of_char == 2)
+	{
+		strcpy(P_ID_S, token[1]);
 	}
-	else{
+	else
+	{
 		fprintf(stderr, "Invalid number of arguments\n [usage] pinfo <pid>\n");
 		return;
 	}
-	
-	char *path = malloc(100);
-	strcpy(path, "/proc/");
-	strcat(path, pids);
-	strcat(path, "/status");
-	
-	printf("pid -- %s\n", pids);
 
-	FILE *procstat = fopen(path, "r");
-	if(procstat) {
-		char *buff = malloc(100);
-		while(fgets(buff, 100, procstat)) {
-			// printf("%s\n", buff);
-			if(!strncmp("State", buff, 5)) {
-				printf("Process status -- %s", buff+7);
+	char *prev_directory = malloc(200);
+	strcpy(prev_directory, "/proc/");
+	strcat(prev_directory, P_ID_S);
+	strcat(prev_directory, "/status");
+
+	printf("pid -- %s\n", P_ID_S);
+
+	FILE *procstat = fopen(prev_directory, "r");
+	if (procstat)
+	{
+		char *buff = malloc(200);
+		while (fgets(buff, 200, procstat))
+		{
+			if (!strncmp("State", buff, 5))
+			{
+				printf("Process status -- %s", buff + 7);
 			}
-			if(!strncmp("VmSize", buff, 6)) {
+			if (!strncmp("VmSize", buff, 6))
+			{
 				printf("memory -- %s", buff + 8);
 			}
 		}
-		
-		char *pathE = malloc(100);
-		strcpy(pathE, "/proc/");
-		strcat(pathE, pids);
-		strcat(pathE, "/exe");
-		
-		char buff2[100] = "";
 
-		if(readlink(pathE, buff2, 100) > 0){
+		char *prev_directoryE = malloc(200);
+		strcpy(prev_directoryE, "/proc/");
+		strcat(prev_directoryE, P_ID_S);
+		strcat(prev_directoryE, "/exe");
+
+		char buff2[200] = "";
+
+		if (readlink(prev_directoryE, buff2, 200) > 0)
+		{
 			addhome_directory(buff2, home_directory);
-			printf("executable path -- %s\n", buff2);
+			printf("executable prev_directory -- %s\n", buff2);
 		}
-		else{
-			perror("executable path");
+		else
+		{
+			perror("executable prev_directory");
 		}
-		free(pathE);
+		free(prev_directoryE);
 		free(buff);
 	}
-	else{
+	else
+	{
 		perror("pinfo");
 	}
 
-	free(path);
+	free(prev_directory);
 	fclose(procstat);
-}	
+}

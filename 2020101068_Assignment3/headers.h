@@ -14,39 +14,45 @@
 #include <fcntl.h>
 #include <termios.h>
 
-void run(char *inputString, char *home_directory);
-void checkPiping(char *inputString, char *home_directory, int pipes[][2], int pipenum); 
-
-void execLS(int number_of_char, char *token[], char *home_directory);
-void sls(char *dir);
-void slsa(char *dir);
-void slsl(char *dir);
-void slsal(char *dir);
-void decideColor(int flag1,int flag2);
-void resetColor();
-
-int gettoken(char inputString[], char **token);
-int getInput(char *inputString, char **commands);
-
-char *gethome_directory();
-void addhome_directory(char *currDir, char *home_directory);
-void disp_dir(char *home_directory);	
-
-// Builtin commands
-int execBuiltin(int number_of_char, char *token[], char *home_directory);
+// Builtin commands ----> done
+int Builtin(int number_of_char, char *token[], char *home_directory);
 void pwd();
 void echo(char **token, int number_of_char);
 void cd(char **token, int number_of_char, char *home_directory);
 
-void execJobs(int number_of_char, char *token[]);
-void exec_kjob(int number_of_char, char *token[]);
-void exec_overkill(int number_of_char, char *token[]);
+// displaying commands ---> done
+char *gethome_directory();
+void addhome_directory(char *curr_directory, char *home_directory);
+void display_directory(char *home_directory);	
+
+// getting input and token ----> done
+int gettoken(char inputString[], char **token);
+int getInput(char *inputString, char **commands);
+
+// ls command ----> done
+void ls(int number_of_char, char *token[], char *home_directory);
+void ls_normal(char *directory);
+void ls_a(char *directory);
+void ls_l(char *directory);
+void ls_al(char *directory);
+
+// pinfo command ---> done
+void pinfo(int number_of_char, char *token[], char *home_directory);
+
+// bg,fg, and jobs handling ----> done
+void Jobs(int number_of_char, char *token[]);
+void sig(int number_of_char, char *token[]);
 void exec_fg(int number_of_char, char *token[]);
 void exec_bg(int number_of_char, char *token[]);
 void execute(int number_of_char, char *token[], int bg);
 void checkFinish();
 
-void execPinfo(int number_of_char, char *token[], char *home_directory);
+
+
+void run(char *inputString, char *home_directory);
+void checkPiping(char *inputString, char *home_directory, int pipes[][2], int pipenum); 
+
+
 
 void insertHistory(char *inputString, char *home_directory);
 void execHistory(int number_of_char, char *token[], char *home_directory);

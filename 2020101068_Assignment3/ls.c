@@ -1,223 +1,232 @@
 #include "headers.h"
 
 /*
-**	execls executes the ls command
-**	sls is used for simple ls
-**  slsal is used for ls -al
-**  slsa is used for ls -a
-**  slsl is used for ls -l
+**	ls executes the ls command
+**	ls_normal is used for simple ls
+**  ls_al is used for ls -al
+**  ls_a is used for ls -a
+**  ls_l is used for ls -l
 */
 
-void execLS(int number_of_char, char *token[], char *home_directory)
+void ls(int number_of_char, char *token[], char *home_directory)
 {
-	char *dir = malloc(1024);
-	strcpy(dir, ".");
-	int flag_l = 0;
-	int flag_a = 0;
-	int valid = 0;
-	for(int i = 1; i < number_of_char; i++){
-		if(token[i][0] == '-'){
-			for(int j = 1;j < strlen(token[i]); j++){
-				if(token[i][j] == 'l'){
-					flag_l = 1;
+	char *directory = malloc(1024);
+	strcpy(directory, ".");
+	int flag_FOR_l = 0;
+	int flag_FOR_a = 0;
+	int possible = 0;
+	for (int i = 1; i < number_of_char; i++)
+	{
+		if (token[i][0] == '-')
+		{
+			for (int j = 1; j < strlen(token[i]); j++)
+			{
+				if (token[i][j] == 'a')
+				{
+					flag_FOR_a = 1;
 				}
-				else if(token[i][j] == 'a'){
-					flag_a = 1;
+				else if (token[i][j] == 'l')
+				{
+					flag_FOR_l = 1;
 				}
-				else{
+				else
+				{
 					printf("Only ls -[al] implemented\n");
 				}
 			}
 		}
-		else{
-			valid++;
-			if(valid > 1){
-				printf("Too many token / Presently only valid for one directory\n");
+		else
+		{
+			possible++;
+			if (possible > 1)
+			{
+				printf("Too many token / Presently only possible for one directory\n");
 				return;
 			}
-			strcpy(dir, token[i]);
+			strcpy(directory, token[i]);
 		}
 	}
-	char *home_directorycpy = malloc(1024);
-	strcpy(home_directorycpy, home_directory);
-	if(dir[0] == '~'){
-		strcat(home_directorycpy, dir+1);
-		strcpy(dir, home_directorycpy);
+	char *dummy_home_directory = malloc(1024);
+	strcpy(dummy_home_directory, home_directory);
+	if (directory[0] == '~')
+	{
+		strcat(dummy_home_directory, directory + 1);
+		strcpy(directory, dummy_home_directory);
 	}
-	if(flag_a && flag_l){
-		slsal(dir);
+	if (flag_FOR_a && flag_FOR_l)
+	{
+		ls_al(directory);
 	}
-	else if(flag_a){
-		slsa(dir);
+	else if (flag_FOR_a)
+	{
+		ls_a(directory);
 	}
-	else if(flag_l){
-		slsl(dir);
+	else if (flag_FOR_l)
+	{
+		ls_l(directory);
 	}
-	else{
-		sls(dir);
+	else
+	{
+		ls_normal(directory);
 	}
 
-	free(dir);
-	free(home_directorycpy);
+	free(directory);
+	free(dummy_home_directory);
 }
 
-void sls(char *dir)
+void ls_normal(char *directory)
 {
-	struct dirent **namelist;
-	int n;
-	n = scandir(dir, &namelist, NULL, alphasort);
-	if(n == -1){
+	struct dirent **All_Names;
+	int n = scandir(directory, &All_Names, NULL, alphasort);
+	if (n != -1)
+	{
+		while (n--)
+		{
+			if (All_Names[n]->d_name[0] != '.')
+				printf("%s\n", All_Names[n]->d_name);
+			free(All_Names[n]);
+		}
+	}
+	else
+	{
 		perror("ls");
 		return;
 	}
-	while(n--){
-		if(namelist[n]->d_name[0] != '.')
-			printf("%s\n", namelist[n]->d_name);
-		free(namelist[n]);
-	}
-	free(namelist);
+	free(All_Names);
 }
 
-void slsa(char *dir)
+void ls_al(char *directory)
 {
-	struct dirent **namelist;
-	int n;
-	n = scandir(dir, &namelist, NULL, alphasort);
-	if(n == -1){
-		perror("ls");
-		return;
-	}
-	while(n--){
-		printf("%s\n", namelist[n]->d_name);
-		free(namelist[n]);
-	}
-	free(namelist);
-}
-
-void slsal(char *dir)
-{
-	struct dirent **namelist;
+	struct dirent **All_Names;
 	struct stat st;
-	if(stat(dir, &st) != 0){
+	if (stat(directory, &st) != 0)
+	{
 		perror("ls");
 		return;
 	}
 	printf("total %ld\n", st.st_size);
-	int n;
-	n = scandir(dir, &namelist, NULL, alphasort);
-	if(n == -1){
+	int n = scandir(directory, &All_Names, NULL, alphasort);
+	if (n == -1)
+	{
 		perror("ls");
 		return;
 	}
-	int size_dir_string = strlen(dir);
-	while(n--){
-		dir[size_dir_string] = '/';
-		dir[size_dir_string+1] = '\0';
-		strcat(dir, namelist[n]->d_name);
-		if(stat(dir, &st) != 0){
+	int size_OF_directory = strlen(directory);
+	while (n--)
+	{
+		directory[size_OF_directory] = '/';
+		directory[size_OF_directory + 1] = '\0';
+		strcat(directory, All_Names[n]->d_name);
+		if (stat(directory, &st) != 0)
+		{
 			perror("ls");
 			return;
 		}
-		printf( (S_ISDIR(st.st_mode)) ? "d" : "-");
-    	printf( (st.st_mode & S_IRUSR) ? "r" : "-");
-    	printf( (st.st_mode & S_IWUSR) ? "w" : "-");
-    	printf( (st.st_mode & S_IXUSR) ? "x" : "-");
-    	printf( (st.st_mode & S_IRGRP) ? "r" : "-");
-    	printf( (st.st_mode & S_IWGRP) ? "w" : "-");
-    	printf( (st.st_mode & S_IXGRP) ? "x" : "-");
-    	printf( (st.st_mode & S_IROTH) ? "r" : "-");
-    	printf( (st.st_mode & S_IWOTH) ? "w" : "-");
-    	printf( (st.st_mode & S_IXOTH) ? "x" : "-");
-    	printf(" ");
-    	printf("%2ld ", st.st_nlink);
-    	struct passwd *pass = getpwuid(st.st_uid);
-    	printf("%8s ", pass->pw_name);
-    	struct group *grp = getgrgid(st.st_gid);
-    	printf("%8s ", grp->gr_name);
-    	printf("%8ld ", st.st_size);
-    	char *date = malloc(50);
-    	strftime(date, 50, "%b %d %R", localtime(&(st.st_mtime)));
-    	printf("%s ", date);
-    	decideColor(S_ISDIR(st.st_mode), st.st_mode & S_IXUSR);
-    	printf("%s\n", namelist[n]->d_name);
-    	resetColor();
-    	
-    	free(date);
-		free(namelist[n]);
+		printf((S_ISDIR(st.st_mode)) ? "d" : "-");
+		printf((st.st_mode & S_IRUSR) ? "r" : "-");
+		printf((st.st_mode & S_IWUSR) ? "w" : "-");
+		printf((st.st_mode & S_IXUSR) ? "x" : "-");
+		printf((st.st_mode & S_IRGRP) ? "r" : "-");
+		printf((st.st_mode & S_IWGRP) ? "w" : "-");
+		printf((st.st_mode & S_IXGRP) ? "x" : "-");
+		printf((st.st_mode & S_IROTH) ? "r" : "-");
+		printf((st.st_mode & S_IWOTH) ? "w" : "-");
+		printf((st.st_mode & S_IXOTH) ? "x" : "-");
+		printf(" ");
+		printf("%3ld ", st.st_nlink);
+		struct passwd *password = getpwuid(st.st_uid);
+		printf("%12s ", password->pw_name);
+		struct group *grp = getgrgid(st.st_gid);
+		printf("%12s ", grp->gr_name);
+		printf("%8ld ", st.st_size);
+		char *date_string = malloc(50);
+		strftime(date_string, 50, "%b %2d %R", localtime(&(st.st_mtime)));
+		printf("%s ", date_string);
+		printf("%s\n", All_Names[n]->d_name);
+		free(date_string);
+		free(All_Names[n]);
 	}
-	free(namelist);
+	free(All_Names);
 }
 
-void slsl(char *dir)
+void ls_l(char *directory)
 {
-	struct dirent **namelist;
+	struct dirent **All_Names;
 	struct stat st;
-	if(stat(dir, &st) != 0){
+	if (stat(directory, &st) != 0)
+	{
 		perror("ls");
 		return;
 	}
 	printf("total %ld\n", st.st_size);
 	int n;
-	n = scandir(dir, &namelist, NULL, alphasort);
-	if(n == -1){
+	n = scandir(directory, &All_Names, NULL, alphasort);
+	if (n == -1)
+	{
 		perror("ls");
 		return;
 	}
-	int size_dir_string = strlen(dir);
-	while(n--){
-		if(namelist[n]->d_name[0] == '.'){
-			free(namelist[n]);
+	int size_OF_directory = strlen(directory);
+	while (n--)
+	{
+		if (All_Names[n]->d_name[0] == '.')
+		{
+			free(All_Names[n]);
 			continue;
 		}
-		dir[size_dir_string] = '/';
-		dir[size_dir_string+1] = '\0';
-		strcat(dir, namelist[n]->d_name);
-		if(stat(dir, &st) != 0){
-			printf("%s\n", dir);
+		directory[size_OF_directory] = '/';
+		directory[size_OF_directory + 1] = '\0';
+		strcat(directory, All_Names[n]->d_name);
+		if (stat(directory, &st) != 0)
+		{
+			printf("%s\n", directory);
 			perror("ls");
 			return;
 		}
-		printf( (S_ISDIR(st.st_mode)) ? "d" : "-");
-    	printf( (st.st_mode & S_IRUSR) ? "r" : "-");
-    	printf( (st.st_mode & S_IWUSR) ? "w" : "-");
-    	printf( (st.st_mode & S_IXUSR) ? "x" : "-");
-    	printf( (st.st_mode & S_IRGRP) ? "r" : "-");
-    	printf( (st.st_mode & S_IWGRP) ? "w" : "-");
-    	printf( (st.st_mode & S_IXGRP) ? "x" : "-");
-    	printf( (st.st_mode & S_IROTH) ? "r" : "-");
-    	printf( (st.st_mode & S_IWOTH) ? "w" : "-");
-    	printf( (st.st_mode & S_IXOTH) ? "x" : "-");
-    	printf(" ");
-    	printf("%2ld ", st.st_nlink);
-    	struct passwd *pass = getpwuid(st.st_uid);
-    	printf("%8s ", pass->pw_name);
-    	struct group *grp = getgrgid(st.st_gid);
-    	printf("%8s ", grp->gr_name);
-    	printf("%8ld ", st.st_size);
-    	char *date = malloc(50);
-    	strftime(date, 50, "%b %d %R", localtime(&(st.st_mtime)));
-    	printf("%s ", date);
-    	decideColor(S_ISDIR(st.st_mode), st.st_mode & S_IXUSR);
-    	printf("%s\n", namelist[n]->d_name);
-    	resetColor();
-		
-		free(date);
-		free(namelist[n]);
+		printf((S_ISDIR(st.st_mode)) ? "d" : "-");
+		printf((st.st_mode & S_IRUSR) ? "r" : "-");
+		printf((st.st_mode & S_IWUSR) ? "w" : "-");
+		printf((st.st_mode & S_IXUSR) ? "x" : "-");
+		printf((st.st_mode & S_IRGRP) ? "r" : "-");
+		printf((st.st_mode & S_IWGRP) ? "w" : "-");
+		printf((st.st_mode & S_IXGRP) ? "x" : "-");
+		printf((st.st_mode & S_IROTH) ? "r" : "-");
+		printf((st.st_mode & S_IWOTH) ? "w" : "-");
+		printf((st.st_mode & S_IXOTH) ? "x" : "-");
+		printf(" ");
+		printf("%3ld ", st.st_nlink);
+		struct passwd *password = getpwuid(st.st_uid);
+		printf("%12s ", password->pw_name);
+		struct group *grp = getgrgid(st.st_gid);
+		printf("%12s ", grp->gr_name);
+		printf("%8ld ", st.st_size);
+		char *date_string = malloc(50);
+		strftime(date_string, 50, "%b %d %R", localtime(&(st.st_mtime)));
+		printf("%s ", date_string);
+		printf("%s\n", All_Names[n]->d_name);
+		free(date_string);
+		free(All_Names[n]);
 	}
-	free(namelist);
+	free(All_Names);
 }
 
-void decideColor(int flag1, int flag2)
+void ls_a(char *directory)
 {
-	if(flag1){
-		printf("\033[1;34m");
+	struct dirent **All_Names;
+	int n = scandir(directory, &All_Names, NULL, alphasort);
+	if (n != -1)
+	{
+		while (n--)
+		{
+			printf("%s\n", All_Names[n]->d_name);
+			free(All_Names[n]);
+		}
 	}
-	else if(flag2){
-		printf("\033[1;32m");
+	else
+	{
+		perror("ls");
+		return;
 	}
-}
 
-void resetColor()
-{
-	printf("\033[0m");
+	free(All_Names);
 }

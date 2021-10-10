@@ -54,8 +54,8 @@ void checkPiping(char *inputString, char *home_directory, int pipes[][2], int pi
 
 void run(char *inputString, char *home_directory)
 {
-	char **argV = (char **)malloc(10*sizeof(char *)); //Assuming max 10 argV
-	int argC = getargV(inputString, argV);
+	char **token = (char **)malloc(10*sizeof(char *)); //Assuming max 10 token
+	int number_of_char = gettoken(inputString, token);
 
 	int fstdin, fstdout;
 	if((fstdin = dup(0)) < 0) {
@@ -67,48 +67,45 @@ void run(char *inputString, char *home_directory)
 		return;
 	}
 
-	if(checkRedirect(&argC, argV, home_directory) != 0) {
+	if(checkRedirect(&number_of_char, token, home_directory) != 0) {
 		return;
 	}
 	
 	int bg = 0;
-	if(!strcmp(argV[argC-1], "&")) {
-		argV[argC-1] = NULL;
-		argC--;
+	if(!strcmp(token[number_of_char-1], "&")) {
+		token[number_of_char-1] = NULL;
+		number_of_char--;
 		bg = 1;
 	}
 
-	if(!strcmp(argV[0],"exit") || !strcmp(argV[0],"quit")) {
+	if(!strcmp(token[0],"exit") || !strcmp(token[0],"quit")) {
 		_exit(0);
 	}
 
-	if(execBuiltin(argC, argV, home_directory) != 0) {
-		if(!strcmp(argV[0], "ls")) {
-			execLS(argC, argV, home_directory);
+	if(Builtin(number_of_char, token, home_directory) != 0) {
+		if(!strcmp(token[0], "ls")) {
+			ls(number_of_char, token, home_directory);
 		}
-		else if(!strcmp(argV[0], "pinfo")) {
-			execPinfo(argC, argV, home_directory);
+		else if(!strcmp(token[0], "pinfo")) {
+			pinfo(number_of_char, token, home_directory);
 		}
-		else if(!strcmp(argV[0], "nightswatch")) {
-			execNight(argC, argV);
+		else if(!strcmp(token[0], "nightswatch")) {
+			execNight(number_of_char, token);
 		}
-		else if(!strcmp(argV[0], "jobs")) {
-			execJobs(argC, argV);
+		else if(!strcmp(token[0], "jobs")) {
+			Jobs(number_of_char, token);
 		}
-		else if(!strcmp(argV[0], "kjob")) {
-			exec_kjob(argC, argV);
+		else if(!strcmp(token[0], "sig")) {
+			sig(number_of_char, token);
 		}
-		else if(!strcmp(argV[0], "overkill")) {
-			exec_overkill(argC, argV);
+		else if(!strcmp(token[0], "fg")) {
+			exec_fg(number_of_char, token);
 		}
-		else if(!strcmp(argV[0], "fg")) {
-			exec_fg(argC, argV);
-		}
-		else if(!strcmp(argV[0], "bg")) {
-			exec_bg(argC, argV);
+		else if(!strcmp(token[0], "bg")) {
+			exec_bg(number_of_char, token);
 		}
 		else {
-			execute(argC, argV, bg);
+			execute(number_of_char, token, bg);
 		}
 		
 	}

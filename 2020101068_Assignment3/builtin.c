@@ -1,19 +1,19 @@
 #include "headers.h"
 
-#define BUF_SIZE 1024
+#define BUFFER_SIZE 1024
 
-int execBuiltin(int number_of_char, char *token[], char *home_directory)
+int Builtin(int number_of_char, char *token[], char *home_directory)
 {
-	if (!strcmp(token[0], "cd")){
-		cd(token, number_of_char, home_directory);
+	if(!strcmp(token[0], "pwd")){
+		pwd();
 		return 0;
 	}
 	else if(!strcmp(token[0], "echo")){
 		echo(token, number_of_char);
 		return 0;
 	}
-	else if(!strcmp(token[0], "pwd")){
-		pwd();
+	else if (!strcmp(token[0], "cd")){
+		cd(token, number_of_char, home_directory);
 		return 0;
 	}
 	return 1;
@@ -53,11 +53,11 @@ void cd(char **token, int number_of_char, char *home_directory)
 		printf("cd: string not in the current working directory: %s\n", token[0]);
 		return;
 	}
-	char *path = malloc(BUF_SIZE);
+	char *prev_directory = malloc(BUFFER_SIZE);
 	
 	if(number_of_char == 1){
-		strcpy(path, home_directory);
-		if(chdir(path) != 0){
+		strcpy(prev_directory, home_directory);
+		if(chdir(prev_directory) != 0){
 			perror("cd");
 		}
 		return;
@@ -66,19 +66,19 @@ void cd(char **token, int number_of_char, char *home_directory)
 	if(token[1][0] == '~'){
 		int i,j;
 		for(i=0; i < strlen(home_directory); i++){
-			path[i] = home_directory[i];
+			prev_directory[i] = home_directory[i];
 		}
 		for(j = 1;j < strlen(token[1]); j++){
-			path[i++] = token[1][j];
+			prev_directory[i++] = token[1][j];
 		}
 	}
 	else {
-		strcpy(path, token[1]);
+		strcpy(prev_directory, token[1]);
 	}
 
-	if(chdir(path) != 0){
+	if(chdir(prev_directory) != 0){
 		perror("cd");
 	}
 
-	free(path);
+	free(prev_directory);
 }
