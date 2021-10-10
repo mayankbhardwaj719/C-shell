@@ -89,7 +89,7 @@ void run(char *inputString, char *home_directory)
 		else if(!strcmp(token[0], "pinfo")) {
 			pinfo(number_of_char, token, home_directory);
 		}
-		else if(!strcmp(token[0], "nightswatch")) {
+		else if(!strcmp(token[0], "baywatch")) {
 			execNight(number_of_char, token);
 		}
 		else if(!strcmp(token[0], "jobs")) {

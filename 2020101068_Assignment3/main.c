@@ -22,6 +22,7 @@ int main()
 	while (1) {
 		display_directory(home_directory);
 		signal(SIGINT, SIGINT_HANDLE);
+		checkFinish();
 		signal(SIGTSTP, SIGTSTP_HANDLE);
 
 		int size = getInput(inputString, commands);
@@ -31,7 +32,7 @@ int main()
 			checkPiping(commands[i], home_directory, pipes, 0);
 		}
 
-		checkFinish();
+		
 	}
 	return 0;
 }
