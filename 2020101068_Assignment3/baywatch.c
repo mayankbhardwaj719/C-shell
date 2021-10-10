@@ -118,6 +118,7 @@ void exec_interrupt(int sec)
 			scanf("%c", &c);
 			if(c == 'q'){
 				kill(pid, SIGKILL);
+				printf("\n");
 				break;
 			}
 		}

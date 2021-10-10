@@ -47,20 +47,17 @@ void exec_bg(int number_of_char, char *token[]);
 void execute(int number_of_char, char *token[], int bg);
 void checkFinish();
 
-
+// baywatch ---> done
+void baywatch(int number_of_char, char *token[]);
+void exec_dirty(int sec);
+void exec_interrupt(int sec);
 
 void run(char *inputString, char *home_directory);
 void checkPiping(char *inputString, char *home_directory, int pipes[][2], int pipenum); 
 
 
 
-void insertHistory(char *inputString, char *home_directory);
-void execHistory(int number_of_char, char *token[], char *home_directory);
-
-void execNight(int number_of_char, char *token[]);
-void exec_dirty(int sec);
-void exec_interrupt(int sec);
-
 int checkRedirect(int *number_of_char, char *token[], char *home_directory);
+
 
 

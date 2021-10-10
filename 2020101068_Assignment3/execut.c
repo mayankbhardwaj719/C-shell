@@ -1,17 +1,34 @@
 #include "headers.h"
 
-struct processes
+typedef struct processes
 {
 	int job_Num;
 	int job_pid;
 	char process_Name[1024];
 	int curr_status; //1 for Running and 0 for stopped
-	int indicator;			 //0 for foreground process and 1 for background process
-} PCS[100];		 //currently only check upto 100 processes
+	int indicator;	 //0 for foreground process and 1 for background process
+
+} proc;
+proc PCS[100]; //currently only check upto 100 processes
 
 int process_size = 0;
 int fg_process;
 int ctrlZ = 0;
+
+// setting up rules for comparison
+// return strcmp(*((const char**)a)->process_Name, *((const char**)b)->process_Name);
+int comparator(const void *p, const void *q)
+{
+	return strcmp(((proc *)p)->process_Name, ((proc *)q)->process_Name);
+}
+
+// // Function to sort the array
+// void sort(const char *arr[], int n)
+// {
+// 	// calling qsort function to sort the array
+// 	// with the help of Comparator
+// qsort(arr, n, sizeof(const char *),comparator);
+// }
 
 void signalHandler2(int signum)
 {
@@ -25,10 +42,10 @@ void checkFinish()
 	int status;
 	pid_t pid;
 	while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
-	{	
-		int i=1;
+	{
+		int i = 1;
 		// for (int i = 1; i <= process_size; i++)
-		while(i<=process_size)
+		while (i <= process_size)
 		{
 			if (PCS[i].job_pid == pid)
 			{
@@ -45,9 +62,9 @@ void checkFinish()
 			i++;
 		}
 	}
-	int j = 1,i=1;
+	int j = 1, i = 1;
 	// for (int i = 1; i <= process_size; i++)
-	while(i<=process_size)
+	while (i <= process_size)
 	{
 		if (PCS[i].curr_status)
 		{
@@ -58,13 +75,33 @@ void checkFinish()
 		i++;
 	}
 	process_size = j - 1;
+	qsort(PCS, process_size, sizeof(struct processes *), comparator);
 }
 
 void Jobs(int number_of_char, char *token[])
 {
 	// for (int i = 1; i <= process_size; i++)
-	int i=1;
-	while(i<=process_size)
+	qsort(PCS, process_size, sizeof(struct processes *), comparator);
+
+	int flag_r = 0;
+	int flag_s = 0;
+	int flag_whole = 0;
+	if (number_of_char == 1)
+		flag_whole = 1;
+	else if (number_of_char == 2)
+	{
+		if (strcmp(token[1], "-r") == 0)
+			flag_r = 1;
+		if (strcmp(token[1], "-s") == 0)
+			flag_s = 1;
+	}
+	else
+	{
+		perror("invalid number of arguments\n");
+		return;
+	}
+	int i = 1;
+	while (i <= process_size)
 	{
 		char *prev_directory = malloc(100);
 		sprintf(prev_directory, "/proc/%d/status", PCS[i].job_pid);
@@ -105,8 +142,23 @@ void Jobs(int number_of_char, char *token[])
 			PCS[i].curr_status = 0;
 		}
 		if (PCS[i].curr_status)
-			printf("[%d] %s %s [%d]\n", PCS[i].job_Num, strcmp(PCStatus,"stopped") ? "Running" : "Stopped", PCS[i].process_Name, PCS[i].job_pid);
+		{
+			if (flag_whole)
+				printf("[%d] %s %s [%d]\n", PCS[i].job_Num, strcmp(PCStatus, "stopped") ? "Running" : "Stopped", PCS[i].process_Name, PCS[i].job_pid);
+			else
+			{
+				if (flag_r && strcmp(PCStatus, "stopped")!=0)
+				{
+					printf("[%d] %s %s [%d]\n", PCS[i].job_Num, strcmp(PCStatus, "stopped") ? "Running" : "Stopped", PCS[i].process_Name, PCS[i].job_pid);
+				}
+				else if(flag_s && strcmp(PCStatus, "stopped")==0)
+				{
+					printf("[%d] %s %s [%d]\n", PCS[i].job_Num, strcmp(PCStatus, "stopped") ? "Running" : "Stopped", PCS[i].process_Name, PCS[i].job_pid);
+				}
+			}
+		}
 
+		qsort(PCS, number_of_char, sizeof(struct processes), comparator);
 		i++;
 	}
 }
@@ -244,7 +296,9 @@ void execute(int number_of_char, char *token[], int bg)
 		}
 		PCS[process_size].curr_status = 1;
 		PCS[process_size].indicator = 1;
-		printf("pid=%d\n",pid);
+		printf("pid=%d\n", pid);
 	}
+
 	return;
 }
+
